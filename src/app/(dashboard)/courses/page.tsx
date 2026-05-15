@@ -154,6 +154,7 @@ export default function CoursesAdminPage() {
       </Space>
 
       <Table<CourseRow>
+        bordered
         rowKey="id"
         loading={list.isLoading}
         dataSource={(list.data?.courses ?? []) as CourseRow[]}

@@ -67,6 +67,7 @@ export default function TeachersPage() {
       </div>
       <Input.Search placeholder="Search name" allowClear onChange={(e) => setSearch(e.target.value)} style={{ maxWidth: 320 }} />
       <Table
+        bordered
         rowKey="id"
         loading={list.isLoading}
         dataSource={list.data?.teachers ?? []}

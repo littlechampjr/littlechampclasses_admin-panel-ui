@@ -3,8 +3,16 @@
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, Col, Row, Statistic, Table, Typography } from "antd";
+import dayjs from "dayjs";
 import { adminApi } from "@/lib/api/adminApi";
 import { useAdminAuth } from "@/providers/AdminAuthProvider";
+
+const inr = new Intl.NumberFormat("en-IN", {
+  style: "currency",
+  currency: "INR",
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 2,
+});
 
 export default function DashboardPage() {
   const { token } = useAdminAuth();
@@ -53,7 +61,8 @@ export default function DashboardPage() {
             Dashboard
           </Typography.Title>
           <Typography.Text type="secondary">
-            Charts below cover the last 30 days (rolling window).
+            Tables below cover the last 30 days (rolling window). Charts can be added later from the same
+            endpoints.
           </Typography.Text>
         </div>
       </div>
@@ -67,8 +76,13 @@ export default function DashboardPage() {
           { title: "Active courses", value: summary.data?.activeCourses },
         ].map((c) => (
           <Col xs={24} sm={12} md={8} lg={6} key={c.title}>
-            <Card>
-              <Statistic title={c.title} value={c.value ?? "—"} loading={summary.isLoading} />
+            <Card bordered className="shadow-sm">
+              <Statistic
+                title={c.title}
+                value={c.value ?? "—"}
+                loading={summary.isLoading}
+                valueStyle={{ fontWeight: 700, fontSize: 26 }}
+              />
             </Card>
           </Col>
         ))}
@@ -76,34 +90,39 @@ export default function DashboardPage() {
 
       <Row gutter={[16, 16]}>
         <Col xs={24} lg={12}>
-          <Card title="Enrollments (daily)">
+          <Card title="Enrollments (daily)" bordered className="shadow-sm">
             <Table
+              bordered
               size="small"
               pagination={false}
               loading={enroll.isLoading}
               dataSource={enroll.data?.points ?? []}
               rowKey="date"
+              scroll={{ x: "max-content" }}
               columns={[
-                { title: "Date", dataIndex: "date" },
-                { title: "New enrollments", dataIndex: "count" },
+                { title: "Date", dataIndex: "date", width: 120 },
+                { title: "New enrollments", dataIndex: "count", align: "right" as const },
               ]}
             />
           </Card>
         </Col>
         <Col xs={24} lg={12}>
-          <Card title="Revenue (daily, ₹)">
+          <Card title="Revenue (daily)" bordered className="shadow-sm">
             <Table
+              bordered
               size="small"
               pagination={false}
               loading={revenue.isLoading}
               dataSource={revenue.data?.points ?? []}
               rowKey="date"
+              scroll={{ x: "max-content" }}
               columns={[
-                { title: "Date", dataIndex: "date" },
+                { title: "Date", dataIndex: "date", width: 120 },
                 {
-                  title: "Paid",
+                  title: "Paid (INR)",
                   dataIndex: "amountRupees",
-                  render: (v: number) => v?.toFixed?.(2) ?? v,
+                  align: "right" as const,
+                  render: (v: number) => inr.format(Number(v) || 0),
                 },
               ]}
             />
@@ -113,34 +132,59 @@ export default function DashboardPage() {
 
       <Row gutter={[16, 16]}>
         <Col xs={24} lg={12}>
-          <Card title="Recent enrollments">
+          <Card title="Recent enrollments" bordered className="shadow-sm">
             <Table
+              bordered
               size="small"
               loading={recentEnroll.isLoading}
               dataSource={recentEnroll.data?.items ?? []}
               rowKey="id"
               pagination={false}
+              scroll={{ x: "max-content" }}
               columns={[
-                { title: "When", dataIndex: "createdAt", width: 200 },
-                { title: "Phone", dataIndex: "userPhone" },
-                { title: "Course", dataIndex: "courseTitle" },
+                {
+                  title: "When",
+                  dataIndex: "createdAt",
+                  width: 168,
+                  render: (v: string) => dayjs(v).format("MMM D, YYYY h:mm A"),
+                },
+                { title: "Phone", dataIndex: "userPhone", width: 140 },
+                { title: "Course", dataIndex: "courseTitle", ellipsis: true },
               ]}
             />
           </Card>
         </Col>
         <Col xs={24} lg={12}>
-          <Card title="Recent payments">
+          <Card title="Recent payments" bordered className="shadow-sm">
             <Table
+              bordered
               size="small"
               loading={recentPay.isLoading}
               dataSource={recentPay.data?.items ?? []}
               rowKey="id"
               pagination={false}
+              scroll={{ x: "max-content" }}
               columns={[
-                { title: "When", dataIndex: "createdAt", width: 200 },
-                { title: "Phone", dataIndex: "userPhone" },
-                { title: "Course", dataIndex: "courseTitle" },
-                { title: "₹", dataIndex: "amountRupees" },
+                {
+                  title: "When",
+                  dataIndex: "createdAt",
+                  width: 168,
+                  render: (v: string) => dayjs(v).format("MMM D, YYYY h:mm A"),
+                },
+                { title: "Phone", dataIndex: "userPhone", width: 140 },
+                {
+                  title: "Course",
+                  dataIndex: "courseTitle",
+                  ellipsis: true,
+                  width: 220,
+                },
+                {
+                  title: "Amount",
+                  dataIndex: "amountRupees",
+                  width: 120,
+                  align: "right" as const,
+                  render: (v: number) => inr.format(Number(v) || 0),
+                },
               ]}
             />
           </Card>

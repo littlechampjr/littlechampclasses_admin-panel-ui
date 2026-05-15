@@ -23,6 +23,7 @@ export default function AuditPage() {
         Recent admin actions (newest first). Sub-admins need the <Typography.Text code>audit:read</Typography.Text> permission.
       </Typography.Paragraph>
       <Table
+        bordered
         rowKey="id"
         loading={q.isLoading}
         dataSource={q.data?.items ?? []}

@@ -3,7 +3,7 @@ import { apiFetch } from "./http";
 export async function adminLogin(body: { email: string; password: string }) {
   return apiFetch<{ token: string; admin: { id: string; email: string; role: string; permissions: string[] } }>(
     "/api/admin/auth/login",
-    { method: "POST", body: JSON.stringify(body) },
+    { method: "POST", body, timeoutMs: 25_000 },
   );
 }
 

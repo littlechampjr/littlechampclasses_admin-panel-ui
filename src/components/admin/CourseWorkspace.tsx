@@ -371,6 +371,7 @@ export function CourseWorkspace({ courseId }: Props) {
                   </Button>
                 </Space>
                 <Table
+                  bordered
                   rowKey="id"
                   loading={teachersCourseQ.isLoading}
                   dataSource={teacherLinks}
@@ -472,6 +473,7 @@ export function CourseWorkspace({ courseId }: Props) {
                   Select a batch row to load sessions for that batch.
                 </Typography.Text>
                 <Table
+                  bordered
                   className="mt-3"
                   rowKey="id"
                   dataSource={batchesQ.data?.batches ?? []}
@@ -504,6 +506,7 @@ export function CourseWorkspace({ courseId }: Props) {
                 {selectedBatchId ? (
                   <Card className="mt-4" title="Sessions" loading={sessionsQ.isLoading}>
                     <Table
+                      bordered
                       rowKey="id"
                       dataSource={sessionsQ.data?.sessions ?? []}
                       pagination={false}
