@@ -60,6 +60,7 @@ export default function FaqsPage() {
       </div>
       <Input.Search allowClear placeholder="Search" onChange={(e) => setSearch(e.target.value)} style={{ maxWidth: 320 }} />
       <Table
+        bordered
         rowKey="id"
         loading={list.isLoading}
         dataSource={list.data?.faqs ?? []}

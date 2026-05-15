@@ -43,6 +43,7 @@ export default function SchedulePage() {
         onChange={(v) => setCourseId(v)}
       />
       <Table
+        bordered
         rowKey="id"
         loading={batches.isLoading}
         dataSource={batches.data?.batches ?? []}

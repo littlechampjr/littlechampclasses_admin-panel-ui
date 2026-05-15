@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Button, Table, Typography } from "antd";
+import { App, Button, Input, Table, Typography } from "antd";
 import { ApiError } from "@/lib/api/http";
 import { adminApi } from "@/lib/api/adminApi";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
@@ -87,13 +87,15 @@ export default function TestsAdminPage() {
       <Typography.Paragraph type="secondary">
         Tests use structured MCQ payloads. Creating opens the JSON editor for the full document (sections + questions).
       </Typography.Paragraph>
-      <input
-        className="max-w-sm rounded border border-[var(--border-soft)] bg-[var(--card)] px-3 py-2 text-sm"
+      <Input
+        allowClear
         placeholder="Search slug/title"
         value={search}
         onChange={(e) => setSearch(e.target.value)}
+        className="max-w-sm"
       />
       <Table
+        bordered
         rowKey="id"
         loading={list.isLoading}
         dataSource={list.data?.tests ?? []}

@@ -62,6 +62,7 @@ export default function HomeworkPage() {
         onChange={setCourseFilter}
       />
       <Table
+        bordered
         rowKey="id"
         loading={list.isLoading}
         dataSource={list.data?.assignments ?? []}

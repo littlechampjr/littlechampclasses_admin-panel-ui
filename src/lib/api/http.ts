@@ -18,17 +18,37 @@ export class ApiError extends Error {
   }
 }
 
+function mergeAbortSignals(a: AbortSignal, b: AbortSignal): AbortSignal {
+  const c = new AbortController();
+  const onAbort = () => c.abort(a.reason ?? b.reason);
+  if (a.aborted || b.aborted) {
+    onAbort();
+    return c.signal;
+  }
+  a.addEventListener("abort", onAbort);
+  b.addEventListener("abort", onAbort);
+  return c.signal;
+}
+
 export async function apiFetch<T>(
   path: string,
-  options: RequestInit & { token?: string | null } = {},
+  options: RequestInit & { token?: string | null; timeoutMs?: number } = {},
 ): Promise<T> {
+  const {
+    token,
+    timeoutMs: explicitTimeoutMs,
+    signal: callerSignal,
+    headers: optionHeaders,
+    body,
+    ...restFetch
+  } = options;
+
   const base = getApiBase();
   if (!base) {
     throw new ApiError("API URL not configured (set NEXT_PUBLIC_API_URL)", 0);
   }
   const url = `${base}${path.startsWith("/") ? "" : "/"}${path}`;
-  const headers = new Headers(options.headers);
-  const body = options.body;
+  const headers = new Headers(optionHeaders);
   const isFormData =
     typeof FormData !== "undefined" && body instanceof FormData;
   if (body != null && typeof body === "string" && !headers.has("Content-Type")) {
@@ -37,17 +57,40 @@ export async function apiFetch<T>(
   if (!isFormData && body != null && typeof body !== "string") {
     headers.set("Content-Type", "application/json");
   }
-  if (options.token) {
-    headers.set("Authorization", `Bearer ${options.token}`);
+  if (token) {
+    headers.set("Authorization", `Bearer ${token}`);
   }
-  const res = await fetch(url, {
-    ...options,
-    headers,
-    body:
-      body != null && typeof body !== "string" && !isFormData
-        ? JSON.stringify(body)
-        : (body as BodyInit | null | undefined),
-  });
+
+  const timeoutMs = explicitTimeoutMs ?? 35_000;
+  const timeoutCtrl = new AbortController();
+  const timeoutId = setTimeout(
+    () => timeoutCtrl.abort(new DOMException("Request timed out", "TimeoutError")),
+    timeoutMs,
+  );
+
+  const signal =
+    callerSignal != null ? mergeAbortSignals(callerSignal, timeoutCtrl.signal) : timeoutCtrl.signal;
+
+  let res: Response;
+  try {
+    res = await fetch(url, {
+      ...restFetch,
+      signal,
+      headers,
+      body:
+        body != null && typeof body !== "string" && !isFormData
+          ? JSON.stringify(body)
+          : (body as BodyInit | null | undefined),
+    });
+  } catch (e) {
+    if (e instanceof DOMException && e.name === "AbortError") {
+      throw new ApiError("Request timed out — is the API running and reachable?", 0);
+    }
+    throw e;
+  } finally {
+    clearTimeout(timeoutId);
+  }
+
   const text = await res.text();
   let parsed: unknown = text;
   if (text) {
