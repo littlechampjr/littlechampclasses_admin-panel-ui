@@ -188,10 +188,20 @@ export const adminApi = {
   teachersList: (token: string, page: number, search?: string) => {
     const q = new URLSearchParams({ page: String(page), limit: "20" });
     if (search) q.set("search", search);
-    return apiFetch<{ total: number; teachers: { id: string; name: string; subjectExpertise: string[] }[] }>(
-      `/api/admin/teachers?${q}`,
-      { token },
-    );
+    return apiFetch<{
+      total: number;
+      teachers: {
+        id: string;
+        name: string;
+        imageUrl: string;
+        bioLine: string;
+        subjectExpertise: string[];
+        modalTagline: string;
+        highlights: string[];
+        displayOrder: number;
+        isActive: boolean;
+      }[];
+    }>(`/api/admin/teachers?${q}`, { token });
   },
 
   teacherCreate: (token: string, body: Record<string, unknown>) =>
